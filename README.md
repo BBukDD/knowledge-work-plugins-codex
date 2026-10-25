@@ -6,21 +6,22 @@ An **unofficial, opt-in Codex adaptation** of the first-party workflows in [Anth
 
 ## Quick start
 
-You need a Codex CLI version with the `codex plugin` command. Add this tagged GitHub marketplace, inspect its available modules, then install one:
+You need a Codex CLI version with the `codex plugin` command. The immutable commit below is the source of release `v0.1.0`. Add that GitHub marketplace revision, inspect its available modules, then install one:
 
 ```sh
-codex plugin marketplace add BBukDD/knowledge-work-plugins-codex --ref v0.1.0
+codex plugin marketplace add BBukDD/knowledge-work-plugins-codex --ref 2f56268419bb84285bcfbfb1f61cdb1afeb0668f
 codex plugin list --available
 codex plugin add kw-operations@knowledge-work-codex
 ```
 
 Replace `kw-operations` with any module in the [catalog](CATALOG.md), such as `kw-marketing` or `kw-product-management`. Start a new Codex chat after installation to use the selected skills. Installation does not connect Slack, CRM, email, cloud storage, or any other service.
 
-To inspect the source locally before adding it, use the same tagged version:
+To inspect the source locally before adding it, check out the same commit:
 
 ```sh
-git clone --branch v0.1.0 https://github.com/BBukDD/knowledge-work-plugins-codex.git
+git clone https://github.com/BBukDD/knowledge-work-plugins-codex.git
 cd knowledge-work-plugins-codex
+git checkout 2f56268419bb84285bcfbfb1f61cdb1afeb0668f
 codex plugin marketplace add "$(pwd)"
 ```
 

@@ -15,19 +15,20 @@
 
 ## 安装与使用
 
-需要支持 `codex plugin` 命令的 Codex CLI。以下命令从 GitHub 的 `v0.1.0` 标签加入市场，再按需安装一个模块：
+需要支持 `codex plugin` 命令的 Codex CLI。以下固定提交是 `v0.1.0` 发行版的源码；用该提交从 GitHub 加入市场，再按需安装一个模块：
 
 ```sh
-codex plugin marketplace add BBukDD/knowledge-work-plugins-codex --ref v0.1.0
+codex plugin marketplace add BBukDD/knowledge-work-plugins-codex --ref 2f56268419bb84285bcfbfb1f61cdb1afeb0668f
 codex plugin list --available
 codex plugin add kw-operations@knowledge-work-codex
 ```
 
-要用其他模块，将 `kw-operations` 换成 [CATALOG.md](CATALOG.md) 中的名称，比如 `kw-marketing`、`kw-product-management`。安装后新建 Codex 聊天即可使用所选 Skill。也可以先下载指定版本、检查源文件，再加入本地市场：
+要用其他模块，将 `kw-operations` 换成 [CATALOG.md](CATALOG.md) 中的名称，比如 `kw-marketing`、`kw-product-management`。安装后新建 Codex 聊天即可使用所选 Skill。也可以先下载并检出同一提交、检查源文件，再加入本地市场：
 
 ```sh
-git clone --branch v0.1.0 https://github.com/BBukDD/knowledge-work-plugins-codex.git
+git clone https://github.com/BBukDD/knowledge-work-plugins-codex.git
 cd knowledge-work-plugins-codex
+git checkout 2f56268419bb84285bcfbfb1f61cdb1afeb0668f
 codex plugin marketplace add "$(pwd)"
 ```
 

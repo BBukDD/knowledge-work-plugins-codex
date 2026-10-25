@@ -1,0 +1,8 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "kw-legal",
+  "version": "0.1.0",
+  "description": "Unofficial Codex adaptation of Anthropic's legal workflows. Review supplied contracts and legal materials, draft issues lists, and organize research and precedent.",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/anthropics/knowledge-work-plugins/tree/33d3dea41a341b341d4f5da2e8801ae0c89be2b8/legal"
+}

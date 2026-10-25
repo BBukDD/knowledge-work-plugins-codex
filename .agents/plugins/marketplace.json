@@ -1,0 +1,212 @@
+{
+  "name": "knowledge-work-codex",
+  "interface": {
+    "displayName": "Knowledge Work for Codex"
+  },
+  "plugins": [
+    {
+      "name": "kw-bio-research",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-bio-research"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Education & Research"
+    },
+    {
+      "name": "kw-cowork-plugin-management",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-cowork-plugin-management"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "kw-customer-support",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-customer-support"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Communication"
+    },
+    {
+      "name": "kw-data",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-data"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Data & Analytics"
+    },
+    {
+      "name": "kw-design",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-design"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Creativity"
+    },
+    {
+      "name": "kw-engineering",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-engineering"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "kw-enterprise-search",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-enterprise-search"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "kw-finance",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-finance"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Finance"
+    },
+    {
+      "name": "kw-human-resources",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-human-resources"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Business & Operations"
+    },
+    {
+      "name": "kw-legal",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-legal"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Business & Operations"
+    },
+    {
+      "name": "kw-marketing",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-marketing"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Business & Operations"
+    },
+    {
+      "name": "kw-operations",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-operations"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Business & Operations"
+    },
+    {
+      "name": "kw-pdf-viewer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-pdf-viewer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "kw-product-management",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-product-management"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Business & Operations"
+    },
+    {
+      "name": "kw-productivity",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-productivity"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "kw-sales",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-sales"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Business & Operations"
+    },
+    {
+      "name": "kw-small-business",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kw-small-business"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Business & Operations"
+    }
+  ]
+}

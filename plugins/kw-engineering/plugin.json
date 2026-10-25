@@ -1,0 +1,8 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "kw-engineering",
+  "version": "0.1.0",
+  "description": "Unofficial Codex adaptation of Anthropic's engineering workflows. Draft standups and architecture notes, review code, analyze incidents, and write technical documentation.",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/anthropics/knowledge-work-plugins/tree/33d3dea41a341b341d4f5da2e8801ae0c89be2b8/engineering"
+}

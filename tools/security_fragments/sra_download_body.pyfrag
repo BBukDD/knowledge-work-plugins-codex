@@ -1,0 +1,52 @@
+    download_items = [
+        (url, output_dir / url.rsplit('/', maxsplit=1)[-1])
+        for urls in fastq_urls.values()
+        for url in urls
+    ]
+    if not download_items:
+        print("\n❌ No FASTQ files available for download")
+        return 1
+
+    print(f"  ↓ {len(download_items)} files to verify or download")
+    print()
+
+    successful = 0
+    failed = []
+
+    if args.parallel > 1:
+        with ThreadPoolExecutor(max_workers=args.parallel) as executor:
+            futures = {
+                executor.submit(download_fastq_file, url, filepath, args.timeout): filepath
+                for url, filepath in download_items
+            }
+            for i, future in enumerate(as_completed(futures), 1):
+                filename, success = future.result()
+                status = "✓" if success else "✗"
+                print(f"  [{i}/{len(download_items)}] {status} {filename}")
+                if success:
+                    successful += 1
+                else:
+                    failed.append(filename)
+    else:
+        for i, (url, filepath) in enumerate(download_items, 1):
+            print(f"  [{i}/{len(download_items)}] Verifying {filepath.name}...")
+            filename, success = download_fastq_file(url, filepath, args.timeout)
+            if success:
+                successful += 1
+                print("    ✓ Done")
+            else:
+                failed.append(filename)
+                print("    ✗ Failed")
+
+    print("\n📊 Download summary:")
+    print(f"  ✓ Successful: {successful}")
+    print(f"  ✗ Failed: {len(failed)}")
+
+    if failed:
+        print("\nFailed downloads:")
+        for filename in failed:
+            print(f"  - {filename}")
+        return 1
+
+    print(f"\n✅ All files downloaded to: {output_dir}")
+

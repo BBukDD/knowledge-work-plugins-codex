@@ -1,0 +1,177 @@
+_ENA_FASTQ_HOST = "ftp.sra.ebi.ac.uk"
+
+
+def _normalize_ena_fastq_url(raw_url: str) -> str:
+    """Turn an ENA FASTQ report entry into a canonical HTTPS URL."""
+    parsed = urlsplit(raw_url if "://" in raw_url else f"https://{raw_url}")
+    if (
+        parsed.scheme not in {"ftp", "http", "https"}
+        or parsed.hostname != _ENA_FASTQ_HOST
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.port is not None
+        or parsed.query
+        or parsed.fragment
+        or not parsed.path.startswith("/vol1/fastq/")
+        or any(part in {".", ".."} or "\\" in part for part in unquote(parsed.path).split("/"))
+    ):
+        raise ValueError(f"Not an expected ENA FASTQ URL: {raw_url}")
+    return urlunsplit(("https", _ENA_FASTQ_HOST, parsed.path, "", ""))
+
+
+def _require_https_ena_url(url: str) -> None:
+    if url != _normalize_ena_fastq_url(url):
+        raise ValueError(f"HTTPS ENA FASTQ URL required: {url}")
+
+
+class ENAHTTPSRedirectHandler(HTTPRedirectHandler):
+    """Reject redirects that leave ENA HTTPS FASTQ storage."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        _require_https_ena_url(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def fetch_ena_fastq_urls(study_accession: str) -> Dict[str, List[str]]:
+    """Get canonical HTTPS FASTQ URLs from ENA for an SRA study."""
+    fastq_urls = {}
+
+    try:
+        ena_url = f"https://www.ebi.ac.uk/ena/portal/api/filereport?accession={study_accession}&result=read_run&fields=run_accession,sample_alias,fastq_ftp&format=tsv"
+
+        if HAS_REQUESTS:
+            response = requests.get(ena_url, timeout=60)
+            response.raise_for_status()
+            content = response.text
+        else:
+            with urlopen(ena_url, timeout=60) as response:
+                content = response.read().decode()
+
+        lines = content.strip().split('\n')
+        if len(lines) < 2:
+            logger.warning(f"No FASTQ URLs found in ENA for {study_accession}")
+            return fastq_urls
+
+        header = lines[0].split('\t')
+        run_idx = header.index('run_accession') if 'run_accession' in header else 0
+        ftp_idx = header.index('fastq_ftp') if 'fastq_ftp' in header else 2
+
+        for line in lines[1:]:
+            if not line.strip():
+                continue
+            fields = line.split('\t')
+            if len(fields) <= max(run_idx, ftp_idx):
+                continue
+            urls = []
+            for raw_url in fields[ftp_idx].split(';'):
+                if not raw_url:
+                    continue
+                try:
+                    urls.append(_normalize_ena_fastq_url(raw_url))
+                except ValueError as error:
+                    logger.warning("Skipping unsafe ENA FASTQ URL: %s", error)
+            if urls:
+                fastq_urls[fields[run_idx]] = urls
+
+        return fastq_urls
+
+    except Exception as error:
+        logger.error(f"Error fetching ENA URLs for {study_accession}: {error}")
+        return fastq_urls
+
+
+def _download_marker_path(output_path: Path) -> Path:
+    return output_path.with_name(f"{output_path.name}.download.json")
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def is_verified_download(url: str, output_path: Path) -> bool:
+    """Reuse a file only when its completion marker matches its actual bytes."""
+    marker_path = _download_marker_path(output_path)
+    if (
+        output_path.is_symlink()
+        or marker_path.is_symlink()
+        or not output_path.is_file()
+        or not marker_path.is_file()
+    ):
+        return False
+    try:
+        marker = json.loads(marker_path.read_text(encoding="utf-8"))
+        if not isinstance(marker, dict):
+            return False
+        size = marker.get("size")
+        digest = marker.get("sha256")
+        if (
+            marker.get("url") != url
+            or type(size) is not int
+            or size != output_path.stat().st_size
+            or not isinstance(digest, str)
+            or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+        ):
+            return False
+        return _sha256_file(output_path) == digest
+    except (OSError, ValueError, json.JSONDecodeError):
+        return False
+
+
+def download_file(url: str, output_path: Path, timeout: int = 300, show_progress: bool = True) -> bool:
+    """Download atomically and reuse only a verified ENA FASTQ file."""
+    staged_data = None
+    staged_marker = None
+    try:
+        _require_https_ena_url(url)
+        if is_verified_download(url, output_path):
+            return True
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        request = Request(url, headers={"User-Agent": "geo-sra-skill/1.0", "Accept-Encoding": "identity"})
+        opener = build_opener(ENAHTTPSRedirectHandler())
+        with opener.open(request, timeout=timeout) as response:
+            _require_https_ena_url(response.geturl())
+            length_header = response.headers.get("Content-Length")
+            expected_size = int(length_header) if length_header is not None else None
+            if expected_size is not None and expected_size < 0:
+                raise ValueError("Negative Content-Length")
+            digest = hashlib.sha256()
+            downloaded = 0
+            with tempfile.NamedTemporaryFile(
+                mode="wb", dir=output_path.parent, prefix=f".{output_path.name}.", suffix=".part", delete=False
+            ) as staged:
+                staged_data = Path(staged.name)
+                while chunk := response.read(1024 * 1024):
+                    staged.write(chunk)
+                    digest.update(chunk)
+                    downloaded += len(chunk)
+                    if show_progress and expected_size:
+                        print(f"\r  Progress: {(downloaded / expected_size) * 100:.1f}%", end="", flush=True)
+            if show_progress:
+                print()
+            if expected_size is not None and downloaded != expected_size:
+                raise ValueError(f"Content-Length mismatch: expected {expected_size}, received {downloaded}")
+
+        marker = {"url": url, "size": downloaded, "sha256": digest.hexdigest()}
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=output_path.parent,
+            prefix=f".{output_path.name}.", suffix=".json.part", delete=False,
+        ) as staged:
+            staged_marker = Path(staged.name)
+            staged.write(json.dumps(marker, sort_keys=True) + "\n")
+        os.replace(staged_data, output_path)
+        os.replace(staged_marker, _download_marker_path(output_path))
+        return True
+    except Exception as error:
+        logger.error("Download error for %s: %s", url, error)
+        return False
+    finally:
+        if staged_data is not None:
+            staged_data.unlink(missing_ok=True)
+        if staged_marker is not None:
+            staged_marker.unlink(missing_ok=True)
+
+

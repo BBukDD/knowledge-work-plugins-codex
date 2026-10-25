@@ -1,0 +1,5 @@
+def download_fastq_file(url: str, output_path: Path, timeout: int = 600) -> tuple[str, bool]:
+    """Download or verify a single FASTQ file through the shared safe path."""
+    return output_path.name, download_file(url, output_path, timeout=timeout, show_progress=False)
+
+
